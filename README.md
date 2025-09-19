@@ -1,35 +1,66 @@
-# pymongo-api
+# Task 1
 
-## Как запустить
+см. файл [solutions/task1/README](solutions/task1/README.md)
 
-Запускаем mongodb и приложение
+# Task 2
 
-```shell
-docker compose up -d
+### Запуск
+
+```bash
+./scripts/up.sh task2
 ```
 
-Заполняем mongodb данными
+### Проверка
 
-```shell
-./scripts/mongo-init.sh
+```bash
+curl http://localhost:3080
+curl http://localhost:3080/helloDoc/users
 ```
 
-## Как проверить
+### Очистка
 
-### Если вы запускаете проект на локальной машине
-
-Откройте в браузере http://localhost:8080
-
-### Если вы запускаете проект на предоставленной виртуальной машине
-
-Узнать белый ip виртуальной машины
-
-```shell
-curl --silent http://ifconfig.me
+```bash
+./scripts/down.sh task2
 ```
 
-Откройте в браузере http://<ip виртуальной машины>:8080
+# Task 3
 
-## Доступные эндпоинты
+### Запуск
 
-Список доступных эндпоинтов, swagger http://<ip виртуальной машины>:8080/docs
+```bash
+./scripts/up.sh task3
+```
+
+### Проверка
+
+```bash
+curl http://localhost:3080
+curl http://localhost:3080/helloDoc/users
+```
+
+### Очистка
+
+```bash
+./scripts/down.sh task3
+```
+
+# Task 4
+
+### Запуск
+
+```bash
+./scripts/up.sh task4
+```
+
+### Проверка
+
+```bash
+curl http://localhost:3080
+curl http://localhost:3080/helloDoc/users
+```
+
+### Очистка
+
+```bash
+./scripts/down.sh task4
+```
