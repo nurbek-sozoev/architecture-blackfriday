@@ -64,3 +64,11 @@ curl http://localhost:3080/helloDoc/users
 ```bash
 ./scripts/down.sh task4
 ```
+
+# Task 5
+
+см. файл [solutions/task5/README](solutions/task5/README.md)
+
+# Task 6
+
+см. файл [solutions/task6/README](solutions/task6/README.md)
