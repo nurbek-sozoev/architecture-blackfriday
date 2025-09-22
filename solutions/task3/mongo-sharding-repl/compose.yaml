@@ -1,0 +1,202 @@
+name: mongo-sharding-repl
+
+services:
+  configsvr:
+    container_name: configsvr
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      [
+        "mongod",
+        "--configsvr",
+        "--replSet",
+        "configRS",
+        "--bind_ip_all",
+        "--port",
+        "27017",
+      ]
+    volumes:
+      - configsvr_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval 'db.runCommand({ ping: 1 })' || exit 1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    networks:
+      - mongonet
+
+  shard1-1:
+    container_name: shard1-1
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      [
+        "mongod",
+        "--shardsvr",
+        "--replSet",
+        "shardRS1",
+        "--bind_ip_all",
+        "--port",
+        "27018",
+      ]
+    volumes:
+      - shard1_1_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --port 27018 --eval 'db.runCommand({ ping: 1 })' || exit 1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    ports:
+      - 27018:27018
+    networks:
+      - mongonet
+
+  shard1-2:
+    container_name: shard1-2
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      [
+        "mongod",
+        "--shardsvr",
+        "--replSet",
+        "shardRS1",
+        "--bind_ip_all",
+        "--port",
+        "27018",
+      ]
+    volumes:
+      - shard1_2_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --port 27018 --eval 'db.runCommand({ ping: 1 })' || exit 1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    ports:
+      - 27021:27018
+    networks:
+      - mongonet
+
+  shard2-1:
+    container_name: shard2-1
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      [
+        "mongod",
+        "--shardsvr",
+        "--replSet",
+        "shardRS2",
+        "--bind_ip_all",
+        "--port",
+        "27019",
+      ]
+    volumes:
+      - shard2_1_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --port 27019 --eval 'db.runCommand({ ping: 1 })' || exit 1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    ports:
+      - 27019:27019
+    networks:
+      - mongonet
+
+  shard2-2:
+    container_name: shard2-2
+    image: dh-mirror.gitverse.ru/mongo:latest
+    command:
+      [
+        "mongod",
+        "--shardsvr",
+        "--replSet",
+        "shardRS2",
+        "--bind_ip_all",
+        "--port",
+        "27019",
+      ]
+    volumes:
+      - shard2_2_data:/data/db
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --port 27019 --eval 'db.runCommand({ ping: 1 })' || exit 1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+      start_period: 10s
+    ports:
+      - 27022:27019
+    networks:
+      - mongonet
+
+  mongos:
+    container_name: mongos
+    image: dh-mirror.gitverse.ru/mongo:latest
+    depends_on:
+      - configsvr
+      - shard1-1
+      - shard1-2
+      - shard2-1
+      - shard2-2
+    command:
+      ["mongos", "--configdb", "configRS/configsvr:27017", "--bind_ip_all"]
+    ports:
+      - 27020:27017
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --eval 'db.adminCommand({ ping: 1 })' || exit 1",
+        ]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+    networks:
+      - mongonet
+
+  pymongo_api:
+    container_name: pymongo_api
+    build:
+      context: api_app
+      dockerfile: Dockerfile
+    depends_on:
+      - mongos
+    ports:
+      - 3080:8080
+    environment:
+      MONGODB_URL: "mongodb://mongos:27017"
+      MONGODB_DATABASE_NAME: "somedb"
+    networks:
+      - mongonet
+
+volumes:
+  configsvr_data:
+  shard1_1_data:
+  shard1_2_data:
+  shard2_1_data:
+  shard2_2_data:
+
+networks:
+  mongonet:
+    driver: bridge
